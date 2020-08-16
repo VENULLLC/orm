@@ -28,8 +28,6 @@ class Post(Model):
 class BelongsTo:
     
     def __init__(self, fn=None, local_key="id", foreign_key="author_id"):
-        
-
         if isinstance(fn, str):
             local_key = fn
             foreign_key = local_key
@@ -41,8 +39,6 @@ class BelongsTo:
         self.model = None
         self.fn = fn
         print('init')
-        # self.model = model
-        # self.bound_method = bound_method
 
     def __call__(self, *args, **kwargs):
         print('call', self, self.fn)
@@ -54,11 +50,16 @@ class BelongsTo:
             The local and foreign keys are also already set
             """
             self.fn = args[0]
-            self.model = self.fn(self)()
-            return self.model
+            print('return nothing', 'fn', self.fn)
+            return self
 
         if self.model:
+            print('return builder')
             return self.model.builder
+        else:
+            print('return model')
+            self.model = self.fn(self)()
+            return self.model
     
     def __set_name__(self, owner, name):
         # do something with owner, i.e.
@@ -82,9 +83,9 @@ class User(Model):
 
 x = User()
 
+print('aaa', x.post)
 print(x.post.title)
 print(x.post.meth)
 print(x.post.meth())
-print(x.post)
 print(x.post().where(''))
 print(x.post().where('').first())

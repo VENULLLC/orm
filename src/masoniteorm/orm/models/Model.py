@@ -47,6 +47,11 @@ class Model:
         "json": JsonCast,
     }
 
+    __passthrough__ = [
+        'where_column',
+        'without_eager'
+    ]
+
     def __init__(self):
         self.__attributes__ = {}
         self.__dirty_attributes__ = {}
@@ -257,6 +262,7 @@ class Model:
             if "." in has_relationship:
                 # Get nested relationship
                 last_builder = cls.builder
+                print('last_builder', last_builder)
                 for split_has_relationship in has_relationship.split("."):
                     local_key = cls._registered_relationships[last_builder.owner][
                         split_has_relationship
@@ -474,13 +480,17 @@ class Model:
 
         if attribute in self.__dict__.get("_relationships", {}):
             return self.__dict__["_relationships"][attribute]
+        
+        if attribute in self.__passthrough__:
+            return getattr(self.builder, attribute)
 
         if attribute not in self.__dict__:
-            name = self.__class__.__name__
+            name = self.__class__
 
-            raise AttributeError(f"class '{name}' has no attribute {attribute}")
+            raise AttributeError(f"{name} has no attribute {attribute}")
 
         return None
+    
 
     def __setattr__(self, attribute, value):
         if hasattr(self, "set_" + attribute + "_attribute"):
@@ -494,6 +504,9 @@ class Model:
                 self.__dict__[attribute] = value
         except KeyError:
             pass
+
+    def __call__(self):
+        return self.builder
 
     def get_raw_attribute(self, attribute):
         return self.__attributes__.get(attribute)

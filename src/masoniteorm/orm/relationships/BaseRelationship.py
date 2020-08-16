@@ -58,34 +58,30 @@ class BaseRelationship:
         Returns:
             object -- Either returns a builder or a hydrated model.
         """
-        relationship = self.fn(self)
-        if not instance: # TODO: Does not get called. This breaks relationships. Needs to be fixed. 8/15/2020
-            """This means the user called the attribute rather than accessed it.
-            In this case we want to return the builder so we can chain on additional methods
-            """
-            self.relationship = self.fn(self)
-            self.relationship.boot()
-            return self.relationship.builder
+        relationship = self.fn(owner)
 
         """Check if the relationship is eager loaded and return that relationship instead
         """
-        if self.fn.__name__ in instance._relationships:
-            return self.fetch_relation(
-                Collection(instance._relationships[self.fn.__name__]),
-                self.foreign_key,
-                instance.get_primary_key_value(),
-            )
+        print('instance', instance, owner, args)
+        print(relationship())
+        return relationship().boot()
+        # if instance and self.fn.__name__ in instance._relationships:
+        #     return self.fetch_relation(
+        #         Collection(instance._relationships[self.fn.__name__]),
+        #         self.foreign_key,
+        #         instance.get_primary_key_value(),
+        #     )
 
-        """Apply the query needed to make this relationship work.
-        """
-        result = self.apply_query(
-            relationship, instance, self.foreign_key, self.local_key
-        )
+        # """Apply the query needed to make this relationship work.
+        # """
+        # result = self.apply_query(
+        #     relationship, owner, self.foreign_key, self.local_key
+        # )
 
-        if isinstance(result, dict):
-            return relationship.hydrate(result)
-        print('res', result)
-        return result
+        # if isinstance(result, dict):
+        #     return relationship.hydrate(result)
+
+        # return relationship
 
     def apply_query(self, foreign, owner, foreign_key, local_key):
         """Apply the query and return a dictionary to be hydrated

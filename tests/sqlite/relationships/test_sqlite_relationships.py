@@ -57,7 +57,7 @@ class TestRelationships(unittest.TestCase):
 
     def test_can_access_relationship(self):
         for user in User.where("id", 1).get():
-            self.assertIsInstance(user.profile, belongs_to)
+            self.assertIsInstance(user.profile, Profile)
 
     def test_can_access_has_many_relationship(self):
         user = User.hydrate(User.where("id", 1).first())
