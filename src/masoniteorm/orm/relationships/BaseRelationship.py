@@ -29,6 +29,7 @@ class BaseRelationship:
         ] = self.foreign_key
         cls._registered_relationships[cls][self.fn.__name__]["local"] = self.local_key
         self.cls = cls
+        print('setting name')
 
     def __call__(self, fn=None, *args, **kwargs):
         """This method is called when the decorator contains arguments.
@@ -42,9 +43,10 @@ class BaseRelationship:
         if callable(fn):
             self.fn = fn
 
+
         return self
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance, owner, *args):
         """This method is called when the decorated method is accessed.
 
         Arguments:
@@ -57,7 +59,7 @@ class BaseRelationship:
             object -- Either returns a builder or a hydrated model.
         """
         relationship = self.fn(self)
-        if not instance:
+        if not instance: # TODO: Does not get called. This breaks relationships. Needs to be fixed. 8/15/2020
             """This means the user called the attribute rather than accessed it.
             In this case we want to return the builder so we can chain on additional methods
             """
@@ -82,7 +84,7 @@ class BaseRelationship:
 
         if isinstance(result, dict):
             return relationship.hydrate(result)
-
+        print('res', result)
         return result
 
     def apply_query(self, foreign, owner, foreign_key, local_key):
