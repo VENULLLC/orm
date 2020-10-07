@@ -221,3 +221,97 @@ class TestSqliteAlterGrammar(unittest.TestCase):
         ]
 
         self.assertEqual(blueprint.to_sql(), sql)
+
+    def test_rename_column(self):
+        schema = Schema(
+            connection=SQLiteConnection,
+            grammar=MockSQLiteGrammarForDroppingColumn,
+            connection_details=DATABASES,
+            connection_driver="sqlite",
+            dry=True
+        )
+
+        with schema.table("users") as blueprint:
+            blueprint.rename("name", "first_name")
+
+        sql = [
+            'CREATE TEMPORARY TABLE __temp__users as select age, name, email from "users"',
+            'DROP TABLE "users"',
+            'CREATE TABLE "users" ("age" INTEGER NOT NULL, "firstname" VARCHAR NOT NULL, "email" VARCHAR NOT NULL)',
+            'INSERT INTO "users" (age, firstname, email) select age, name, email from __temp__users',
+        ]
+        print(blueprint.to_sql())
+        self.assertEqual(blueprint.to_sql(), sql)
+
+    # def test_drop_index(self):
+    #     with self.schema.table("users") as blueprint:
+    #         blueprint.drop_index("name_index")
+
+    #     sql = getattr(
+    #         self, inspect.currentframe().f_code.co_name.replace("test_", "")
+    #     )()
+    #     self.assertEqual(blueprint.to_sql(), sql)
+
+    # def test_drop_multiple_index(self):
+    #     with self.schema.table("users") as blueprint:
+    #         blueprint.drop_index(["name_index", "email_index"])
+
+    #     sql = getattr(
+    #         self, inspect.currentframe().f_code.co_name.replace("test_", "")
+    #     )()
+    #     self.assertEqual(blueprint.to_sql(), sql)
+
+    # def test_drop_unique(self):
+    #     with self.schema.table("users") as blueprint:
+    #         blueprint.drop_unique("name_unique")
+
+    #     sql = getattr(
+    #         self, inspect.currentframe().f_code.co_name.replace("test_", "")
+    #     )()
+    #     self.assertEqual(blueprint.to_sql(), sql)
+
+    # def test_drop_multiple_unique(self):
+    #     with self.schema.table("users") as blueprint:
+    #         blueprint.drop_unique(["name_unique", "email_unique"])
+
+    #     sql = getattr(
+    #         self, inspect.currentframe().f_code.co_name.replace("test_", "")
+    #     )()
+    #     self.assertEqual(blueprint.to_sql(), sql)
+
+    # def test_drop_primary(self):
+    #     with self.schema.table("users") as blueprint:
+    #         blueprint.drop_primary()
+
+    #     sql = getattr(
+    #         self, inspect.currentframe().f_code.co_name.replace("test_", "")
+    #     )()
+    #     self.assertEqual(blueprint.to_sql(), sql)
+
+    # def test_drop_foreign(self):
+    #     with self.schema.table("users") as blueprint:
+    #         blueprint.drop_foreign("users_article_id_foreign")
+
+    #     sql = getattr(
+    #         self, inspect.currentframe().f_code.co_name.replace("test_", "")
+    #     )()
+    #     self.assertEqual(blueprint.to_sql(), sql)
+
+    # def test_drop_multiple_foreign(self):
+    #     with self.schema.table("users") as blueprint:
+    #         blueprint.drop_foreign(["article_id", "post_id"])
+
+    #     sql = getattr(
+    #         self, inspect.currentframe().f_code.co_name.replace("test_", "")
+    #     )()
+    #     self.assertEqual(blueprint.to_sql(), sql)
+
+    # def test_soft_deletes(self):
+    #     with self.schema.table("users") as blueprint:
+    #         blueprint.soft_deletes()
+
+    #     sql = getattr(
+    #         self, inspect.currentframe().f_code.co_name.replace("test_", "")
+    #     )()
+
+    #     self.assertEqual(blueprint.to_sql(), sql)

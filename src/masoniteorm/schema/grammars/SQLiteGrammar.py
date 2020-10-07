@@ -85,16 +85,6 @@ class SQLiteGrammar(BaseGrammar):
         # Need to make an alter statement for each column:
         sql = []
 
-        # Add columns to the table
-        # for column in self.get_columns_to_add():
-
-        #     sql.append(self.alter_format().format(
-        #         table=self._compile_table(self.table),
-        #         columns=self._compile_alter_column(column),
-        #         constraints=self._compile_alter_constraints(),
-        #         foreign_keys=self._compile_alter_foreign_keys(),
-        #     ).strip().rstrip(','))
-        
         # Need to drop columns now. So need to get the existing columns on the table and remove any columns we need to drop
         modifying_columns = self.get_columns_to_modify()
         sql += self.complex_alter_format().format(
@@ -102,6 +92,7 @@ class SQLiteGrammar(BaseGrammar):
             clean_table=self.table,
             column_names=', '.join(self.columnize_names(modifying_columns)),
             columns=', '.join(self.columnize(self.with_columns_to_add(modifying_columns))),
+            new_column_names=', '.join(self.columnize_names(self.with_columns_to_add(modifying_columns))),
             constraints=',' + self._compile_alter_constraints() if self._constraints else "",
             foreign_keys=',' + self._compile_alter_foreign_keys() if self._foreign_keys else "",
         ).strip().rstrip(',').split(';')
@@ -114,8 +105,6 @@ class SQLiteGrammar(BaseGrammar):
     def with_columns_to_add(self, columns):
         columns += self.get_columns_to_add()
         return columns
-
-    
     
     def columnize(self, columns):
         sql = []
@@ -173,7 +162,7 @@ class SQLiteGrammar(BaseGrammar):
                 columns += (column,)
 
         return columns
-    
+
     def get_columns_to_modify(self):
         columns = ()
         columns += self.get_table_columns()
@@ -272,7 +261,7 @@ class SQLiteGrammar(BaseGrammar):
         return "ALTER TABLE {table} {columns}{constraints}{foreign_keys}"
 
     def complex_alter_format(self):
-        return "CREATE TEMPORARY TABLE __temp__{clean_table} as select {column_names} from {table};DROP TABLE {table};CREATE TABLE {table} ({columns}{constraints}{foreign_keys});INSERT INTO {table} ({column_names}) select {column_names} from __temp__{clean_table}"
+        return "CREATE TEMPORARY TABLE __temp__{clean_table} as select {column_names} from {table};DROP TABLE {table};CREATE TABLE {table} ({columns}{constraints}{foreign_keys});INSERT INTO {table} ({new_column_names}) select {column_names} from __temp__{clean_table}"
 
     def create_column_length(self, column_type):
         if column_type in self.types_without_lengths:
@@ -305,6 +294,8 @@ class SQLiteGrammar(BaseGrammar):
         Returns:
             string
         """
+        if isinstance(self._sql, list) and len(self._sql) == 1:
+            return self._sql[0]
         return self._sql
 
     def fulltext_constraint_string(self):

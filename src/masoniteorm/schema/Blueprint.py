@@ -299,6 +299,7 @@ class Blueprint:
         self._action = action
         self._default_string_length = default_string_length
         self._dry = dry
+        self.renamed_columns = {}
         self.connection = connection
 
     def string(self, column, length=255, nullable=False):
@@ -669,7 +670,8 @@ class Blueprint:
                     constraints=self._constraints,
                     foreign_keys=self._foreign_keys,
                     table=self.table,
-                    connection=self.connection
+                    connection=self.connection,
+                    renamed_columns=self.renamed_columns
                 )
                 ._compile_create()
                 .to_sql()
@@ -681,7 +683,8 @@ class Blueprint:
                     constraints=self._constraints,
                     foreign_keys=self._foreign_keys,
                     table=self.table,
-                    connection=self.connection
+                    connection=self.connection,
+                    renamed_columns=self.renamed_columns
                 )
                 ._compile_alter()
                 .to_sql()
@@ -846,6 +849,7 @@ class Blueprint:
         self._last_column = self.new_column(
             None, new_column, action="rename", length=None, nullable=True
         ).rename(old_column)
+        self.renamed_columns.update({old_column: new_column})
         self._columns += (self._last_column,)
         return self
 

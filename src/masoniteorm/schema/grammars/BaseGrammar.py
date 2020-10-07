@@ -29,6 +29,7 @@ class BaseGrammar:
         constraints=(),
         foreign_keys=(),
         connection_details={},
+        renamed_columns={},
         connection=None
     ):
         self._columns = columns
@@ -38,6 +39,7 @@ class BaseGrammar:
         self._constraints = constraints
         self._foreign_keys = foreign_keys
         self._connection_details = connection_details
+        self.renamed_columns = renamed_columns
         self.connection=connection
         self._column = None
 

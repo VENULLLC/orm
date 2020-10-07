@@ -9,7 +9,7 @@ class TestSQLiteGrammar(TestCase):
         blueprint = Blueprint(SQLiteGrammar)
         columns = (blueprint.string("name"), blueprint.string("age"))
         columnize = SQLiteGrammar().columnize(blueprint._columns)
-        self.assertEqual(columnize, ['"name" VARCHAR NOT NULL', '"age" VARCHAR NOT NULL'])
-        self.assertEqual(', '.join(columnize), '"name" VARCHAR NOT NULL, "age" VARCHAR NOT NULL')
-        
+        self.assertEqual(columnize, ['"name" VARCHAR(255) NOT NULL', '"age" VARCHAR(255) NOT NULL'])
+        self.assertEqual(', '.join(columnize), '"name" VARCHAR(255) NOT NULL, "age" VARCHAR(255) NOT NULL')
+
         
